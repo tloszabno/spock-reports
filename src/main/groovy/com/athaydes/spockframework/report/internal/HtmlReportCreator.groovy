@@ -34,6 +34,7 @@ class HtmlReportCreator extends AbstractHtmlCreator<SpecData>
     private final SpecSourceCodeReader codeReader = new SpecSourceCodeReader()
     boolean showCodeBlocks = false
     boolean enabled = true
+    def sourceCodeFormatter = new HumanReadableSourceCodeFormatter()
 
     HtmlReportCreator() {
         reportAggregator = defaultAggregator
@@ -296,7 +297,9 @@ class HtmlReportCreator extends AbstractHtmlCreator<SpecData>
                     stringProcessor.process( block.text, feature.dataVariables, iteration ) :
                     ( block.text ?: '' )
             def blockKind = block.label ?: 'Block:'
-            writeBlockRowsFromCode( builder, trCssClass( feature ), blockKind, block.statements, text )
+
+            def formattedStatements = sourceCodeFormatter.format(block.statements)
+            writeBlockRowsFromCode( builder, trCssClass( feature ), blockKind, formattedStatements, text )
         }
 
         true // found sources
