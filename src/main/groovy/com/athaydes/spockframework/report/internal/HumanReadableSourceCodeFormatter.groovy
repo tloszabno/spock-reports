@@ -7,41 +7,51 @@ class HumanReadableSourceCodeFormatter implements com.athaydes.spockframework.re
 
     private static final String REGEXP_FOR_CAMEL_CASE = "(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])";
 
+    private static final String EMPTY = ""
+    private static final String SPACE = " "
+
+    private static final Map<String, String> REPLACEMENTS = [
+            "("      : EMPTY,
+            ")"      : EMPTY,
+            "'"      : EMPTY,
+            "."      : SPACE,
+            ":"      : SPACE,
+            "=="     : "is equal to",
+            "== null": "is not set",
+            "!= null": "is set",
+            "_"      : SPACE,
+            " = "    : " is "
+    ]
+
+
     @Override
     List<String> format(List<String> blocks) {
-        blocks.collect { it-> formatBlock(it) }
+        blocks.collect { it -> formatBlock(it) }
     }
 
     String formatBlock(String block) {
         block = replaceChars(block)
         block = slitCamelCaseNamesAndToLowerFromSecond(block)
+        block = block.capitalize()
         block
     }
 
 
     private String replaceChars(String block) {
-        block = block.replace('(', '')
-        block = block.replace(')', '')
-        block = block.replace('"', '')
-        block = block.replace('\'', '')
-        block = block.replace('.', ' ')
-        block = block.replace(':', ' ')
-        block = block.replace('==', 'is equal to')
-        block = block.replace('_', ' ')
-        block = block.trim().replaceAll('^def$', '')
-        block = block.replace(' = ', ' is ')
+        for (replacement in REPLACEMENTS) {
+            block = block.replace(replacement.key, replacement.value)
+        }
         block
     }
 
     private String slitCamelCaseNamesAndToLowerFromSecond(String block) {
-        String [] split = block.split(REGEXP_FOR_CAMEL_CASE)
-        if( split.length > 1 ){
-           //FIXME: write in groovy way
-            for (int i = 1; i < split.length; i++) {
-                split[i] = split[i].toLowerCase()
-            }
+        String[] split = block.split(REGEXP_FOR_CAMEL_CASE)
+        if (split.length > 1) {
+            split.collect({ it -> it.toLowerCase() })
+                    .join(" ")
+        } else {
+            block
         }
-        split.join(" ")
     }
 
 }
